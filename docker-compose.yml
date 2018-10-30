@@ -1,0 +1,45 @@
+version: '2'
+services:
+  web:
+    build: .
+    volumes:
+      - .:/app:cached
+      - ~/.bash_history:/root/.bash_history
+    ports:
+      - 3000:3000
+    links:
+      - db
+      - redis
+    command: /bin/bash -c 'bundle exec rails s -p 3000 -b 0.0.0.0'
+    environment: &environment
+      DATABASE_HOST: db
+      DATABASE_USERNAME: postgres
+      BUNDLE_PATH: /bundle_cache
+      PORT: 3000
+      REDIS_URL: redis://redis
+    volumes_from:
+      - bundle_cache
+
+  db:
+    image: postgres:10.5
+
+  redis:
+    image: redis:5.0
+
+  bundle_cache:
+    image: busybox
+    volumes:
+      - /bundle_cache
+
+  sidekiq:
+    image: spree_test_web
+    volumes:
+      - .:/app:cached
+    links:
+      - redis
+      - db
+    environment:
+      <<: *environment
+    command: /bin/bash -c "sidekiq"
+    volumes_from:
+      - bundle_cache
