@@ -1,24 +1,20 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## Requirements:
 
-Things you may want to cover:
+1) docker 18+
+2) docker-compose 1.22+
 
-* Ruby version
+## Gettting started
 
-* System dependencies
+To build image:
+`docker-compose build`
 
-* Configuration
+To finish project setup:
+`docker-compose run --rm web bash -c "bundle install && rails db:create db:migrate db:seed spree_samlpe:load"`
 
-* Database creation
+To start project:
+`docker-compose up`
 
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+To run tests
+`docker-compose run --rm web bin/rspec`
