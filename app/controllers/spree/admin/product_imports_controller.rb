@@ -10,6 +10,7 @@ class Spree::Admin::ProductImportsController < Spree::Admin::BaseController
   def create
     @product_import = ProductImport.new(product_import_params)
     if @product_import.save
+      ProductImportWorker.perform_async(@product_import.id)
       redirect_to admin_product_imports_url
     else
       render :new

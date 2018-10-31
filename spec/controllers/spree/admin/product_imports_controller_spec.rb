@@ -24,5 +24,6 @@ describe Spree::Admin::ProductImportsController do
     expect{
       spree_post :create, { product_import: product_import_attrs }
     }.to change{ ProductImport.count }.by(1)
+      .and change { ProductImportWorker.jobs.size }.by(1)
   end
 end
