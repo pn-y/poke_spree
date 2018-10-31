@@ -8,6 +8,9 @@ require 'rspec/rails'
 require 'spree/testing_support/controller_requests'
 require 'spree/testing_support/factories'
 require 'ffaker'
+require 'sidekiq/testing'
+
+Sidekiq::Testing.inline!
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
@@ -64,4 +67,8 @@ RSpec.configure do |config|
   config.include Devise::Test::ControllerHelpers, type: :controller
   config.include Spree::TestingSupport::ControllerRequests, :type => :controller
   config.include FactoryBot::Syntax::Methods
+
+  config.after(:suite) do
+    FileUtils.rm_rf(Dir["#{Rails.root}/spec/test_files/"])
+  end
 end
