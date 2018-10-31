@@ -10,10 +10,31 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20181030201295) do
+ActiveRecord::Schema.define(version: 2018_10_31_192394) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.bigint "byte_size", null: false
+    t.string "checksum", null: false
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
 
   create_table "friendly_id_slugs", id: :serial, force: :cascade do |t|
     t.string "slug", null: false
@@ -207,7 +228,48 @@ ActiveRecord::Schema.define(version: 20181030201295) do
     t.index ["source_id", "source_type"], name: "index_spree_log_entries_on_source_id_and_source_type"
   end
 
-  create_table "spree_option_type_prototypes", force: :cascade do |t|
+  create_table "spree_oauth_access_grants", force: :cascade do |t|
+    t.integer "resource_owner_id", null: false
+    t.bigint "application_id", null: false
+    t.string "token", null: false
+    t.integer "expires_in", null: false
+    t.text "redirect_uri", null: false
+    t.datetime "created_at", null: false
+    t.datetime "revoked_at"
+    t.string "scopes"
+    t.index ["application_id"], name: "index_spree_oauth_access_grants_on_application_id"
+    t.index ["token"], name: "index_spree_oauth_access_grants_on_token", unique: true
+  end
+
+  create_table "spree_oauth_access_tokens", force: :cascade do |t|
+    t.integer "resource_owner_id"
+    t.bigint "application_id"
+    t.string "token", null: false
+    t.string "refresh_token"
+    t.integer "expires_in"
+    t.datetime "revoked_at"
+    t.datetime "created_at", null: false
+    t.string "scopes"
+    t.string "previous_refresh_token", default: "", null: false
+    t.index ["application_id"], name: "index_spree_oauth_access_tokens_on_application_id"
+    t.index ["refresh_token"], name: "index_spree_oauth_access_tokens_on_refresh_token", unique: true
+    t.index ["resource_owner_id"], name: "index_spree_oauth_access_tokens_on_resource_owner_id"
+    t.index ["token"], name: "index_spree_oauth_access_tokens_on_token", unique: true
+  end
+
+  create_table "spree_oauth_applications", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "uid", null: false
+    t.string "secret", null: false
+    t.text "redirect_uri", null: false
+    t.string "scopes", default: "", null: false
+    t.boolean "confidential", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["uid"], name: "index_spree_oauth_applications_on_uid", unique: true
+  end
+
+  create_table "spree_option_type_prototypes", id: :serial, force: :cascade do |t|
     t.integer "prototype_id"
     t.integer "option_type_id"
     t.index ["option_type_id"], name: "index_spree_option_type_prototypes_on_option_type_id"
@@ -225,7 +287,7 @@ ActiveRecord::Schema.define(version: 20181030201295) do
     t.index ["position"], name: "index_spree_option_types_on_position"
   end
 
-  create_table "spree_option_value_variants", force: :cascade do |t|
+  create_table "spree_option_value_variants", id: :serial, force: :cascade do |t|
     t.integer "variant_id"
     t.integer "option_value_id"
     t.index ["option_value_id"], name: "index_spree_option_value_variants_on_option_value_id"
@@ -245,7 +307,7 @@ ActiveRecord::Schema.define(version: 20181030201295) do
     t.index ["position"], name: "index_spree_option_values_on_position"
   end
 
-  create_table "spree_order_promotions", force: :cascade do |t|
+  create_table "spree_order_promotions", id: :serial, force: :cascade do |t|
     t.integer "order_id"
     t.integer "promotion_id"
     t.index ["order_id"], name: "index_spree_order_promotions_on_order_id"
@@ -283,7 +345,7 @@ ActiveRecord::Schema.define(version: 20181030201295) do
     t.datetime "approved_at"
     t.boolean "confirmation_delivered", default: false
     t.boolean "considered_risky", default: false
-    t.string "guest_token"
+    t.string "token"
     t.datetime "canceled_at"
     t.integer "canceler_id"
     t.integer "store_id"
@@ -297,10 +359,10 @@ ActiveRecord::Schema.define(version: 20181030201295) do
     t.index ["confirmation_delivered"], name: "index_spree_orders_on_confirmation_delivered"
     t.index ["considered_risky"], name: "index_spree_orders_on_considered_risky"
     t.index ["created_by_id"], name: "index_spree_orders_on_created_by_id"
-    t.index ["guest_token"], name: "index_spree_orders_on_guest_token"
     t.index ["number"], name: "index_spree_orders_on_number", unique: true
     t.index ["ship_address_id"], name: "index_spree_orders_on_ship_address_id"
     t.index ["store_id"], name: "index_spree_orders_on_store_id"
+    t.index ["token"], name: "index_spree_orders_on_token"
     t.index ["user_id", "created_by_id"], name: "index_spree_orders_on_user_id_and_created_by_id"
   end
 
@@ -360,6 +422,8 @@ ActiveRecord::Schema.define(version: 20181030201295) do
     t.decimal "amount", precision: 10, scale: 2
     t.string "currency"
     t.datetime "deleted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["deleted_at"], name: "index_spree_prices_on_deleted_at"
     t.index ["variant_id", "currency"], name: "index_spree_prices_on_variant_id_and_currency"
     t.index ["variant_id"], name: "index_spree_prices_on_variant_id"
@@ -376,7 +440,7 @@ ActiveRecord::Schema.define(version: 20181030201295) do
     t.index ["product_id"], name: "index_spree_product_option_types_on_product_id"
   end
 
-  create_table "spree_product_promotion_rules", force: :cascade do |t|
+  create_table "spree_product_promotion_rules", id: :serial, force: :cascade do |t|
     t.integer "product_id"
     t.integer "promotion_rule_id"
     t.index ["product_id"], name: "index_products_promotion_rules_on_product_id"
@@ -419,7 +483,7 @@ ActiveRecord::Schema.define(version: 20181030201295) do
     t.index ["tax_category_id"], name: "index_spree_products_on_tax_category_id"
   end
 
-  create_table "spree_products_taxons", force: :cascade do |t|
+  create_table "spree_products_taxons", id: :serial, force: :cascade do |t|
     t.integer "product_id"
     t.integer "taxon_id"
     t.integer "position"
@@ -460,7 +524,7 @@ ActiveRecord::Schema.define(version: 20181030201295) do
     t.index ["taxon_id"], name: "index_spree_promotion_rule_taxons_on_taxon_id"
   end
 
-  create_table "spree_promotion_rule_users", force: :cascade do |t|
+  create_table "spree_promotion_rule_users", id: :serial, force: :cascade do |t|
     t.integer "user_id"
     t.integer "promotion_rule_id"
     t.index ["promotion_rule_id"], name: "index_promotion_rules_users_on_promotion_rule_id"
@@ -511,7 +575,7 @@ ActiveRecord::Schema.define(version: 20181030201295) do
     t.index ["name"], name: "index_spree_properties_on_name"
   end
 
-  create_table "spree_property_prototypes", force: :cascade do |t|
+  create_table "spree_property_prototypes", id: :serial, force: :cascade do |t|
     t.integer "prototype_id"
     t.integer "property_id"
     t.index ["property_id"], name: "index_spree_property_prototypes_on_property_id"
@@ -638,7 +702,7 @@ ActiveRecord::Schema.define(version: 20181030201295) do
     t.index ["return_authorization_id"], name: "index_spree_return_items_on_return_authorization_id"
   end
 
-  create_table "spree_role_users", force: :cascade do |t|
+  create_table "spree_role_users", id: :serial, force: :cascade do |t|
     t.integer "role_id"
     t.integer "user_id"
     t.index ["role_id"], name: "index_spree_role_users_on_role_id"
@@ -691,7 +755,7 @@ ActiveRecord::Schema.define(version: 20181030201295) do
     t.index ["shipping_method_id"], name: "index_spree_shipping_method_categories_on_shipping_method_id"
   end
 
-  create_table "spree_shipping_method_zones", force: :cascade do |t|
+  create_table "spree_shipping_method_zones", id: :serial, force: :cascade do |t|
     t.integer "shipping_method_id"
     t.integer "zone_id"
     t.index ["shipping_method_id"], name: "index_spree_shipping_method_zones_on_shipping_method_id"
@@ -1058,4 +1122,6 @@ ActiveRecord::Schema.define(version: 20181030201295) do
     t.index ["kind"], name: "index_spree_zones_on_kind"
   end
 
+  add_foreign_key "spree_oauth_access_grants", "spree_oauth_applications", column: "application_id"
+  add_foreign_key "spree_oauth_access_tokens", "spree_oauth_applications", column: "application_id"
 end
