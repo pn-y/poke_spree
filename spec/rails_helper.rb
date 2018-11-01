@@ -9,6 +9,7 @@ require 'spree/testing_support/controller_requests'
 require 'spree/testing_support/factories'
 require 'ffaker'
 require 'sidekiq/testing'
+Dir['./spec/support/**/*.rb'].sort.each { |f| require f }
 
 Sidekiq::Testing.inline!
 # Add additional requires below this line. Rails is not loaded until this point!
@@ -71,4 +72,6 @@ RSpec.configure do |config|
   config.after(:suite) do
     FileUtils.rm_rf(Dir["#{Rails.root}/spec/test_files/"])
   end
+
+  config.include_context "create defaults", create_defaults:  true
 end
